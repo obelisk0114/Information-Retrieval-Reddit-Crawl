@@ -2,6 +2,7 @@ package projectA_crawler;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,13 +53,31 @@ public class Reddit_crawl {
 		return next;
 	}
 	
+	void directoryCheck(String s) {
+		String dirName = "data/" + s;
+		File dir = new File(dirName);
+		if (!dir.exists()) {
+			dir.mkdir();
+			System.out.println("Create new directory");
+		}
+		else {
+			System.out.println("Already");
+		}
+	}
+	
 	void crawlPage(String link) {
 		try {
 			// create the output file and use 'UTF-8' encoding
 			String[] sepLink = link.split("/");
-			String fileName = "data/" + sepLink[sepLink.length - 1] + ".txt";
+			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 1] + ".txt";
+			File file = new File(fileName);
+			if (file.exists()) {
+				System.out.println("Exists: " + sepLink[sepLink.length - 1]);
+				return;
+			}
+			
 			Writer writer = new BufferedWriter(new OutputStreamWriter(
-				    new FileOutputStream(fileName), "UTF-8"));
+				    new FileOutputStream(file), "UTF-8"));
 			
 			String content = getPageFromUrl(link);
 			writer.write(content);
@@ -93,10 +112,12 @@ public class Reddit_crawl {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		// TODO Auto-generated method stub
 		Reddit_crawl test = new Reddit_crawl();
-		String target = "https://www.reddit.com/r/Showerthoughts/";
 		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
+		String target = "https://www.reddit.com/r/Showerthoughts/";
+		String[] targetSeparate = target.split("/");
+		test.directoryCheck(targetSeparate[4]);
 		long startTime = System.currentTimeMillis();
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 1; i++) {
 			target = test.addTopic(target);
 			if (target.equals("")) {
 				System.out.println("No next page.");
