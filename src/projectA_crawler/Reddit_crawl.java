@@ -36,7 +36,7 @@ public class Reddit_crawl {
 			}
 			
 			String topicURL = content.substring(pre + 1, post);
-			topic.add(prefix + topicURL);
+			topic.add(prefix + topicURL + "?limit=500");
 			if (i < 24) {
 				pre = content.indexOf("data-permalink=", post);
 				pre = content.indexOf("\"", pre);
@@ -98,7 +98,7 @@ public class Reddit_crawl {
 		try {
 			// create the output file and use 'UTF-8' encoding
 			String[] sepLink = link.split("/");
-			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 1] + ".txt";
+			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 2] + ".txt";
 			File file = new File(fileName);
 			if (file.exists()) {
 				System.out.println("Exists: " + sepLink[sepLink.length - 1]);
@@ -109,7 +109,21 @@ public class Reddit_crawl {
 				    new FileOutputStream(file), "UTF-8"));
 			
 			String content = getPageFromUrl(link);
-			writer.write(content);
+			int pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">");
+			int post = content.indexOf("</div>", pre + 2);
+			pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
+			while (pre != -1) {
+				pre = content.indexOf("p", pre + 1);
+				post = content.indexOf("</div>", pre + 2);
+				
+				String comments = content.substring(pre + 2, post);
+				comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
+				comments = comments.replaceAll("<p>", "\n");
+				
+				writer.write(comments);
+				writer.write("\n\n");
+				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
+			}
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
