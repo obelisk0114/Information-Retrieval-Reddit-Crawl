@@ -19,42 +19,11 @@ import java.net.CookiePolicy;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Reddit_crawl {
+public class Reddit_crawl_links {
 	public static int DELAY = 1000;
-	private static List<String> topic = new ArrayList<String>();
-	private static String prefix = "https://www.reddit.com";
+	//private static String prefix = "https://www.reddit.com";
 	private String USER_AGENT = "Mozilla/5.0 (Windows NT 6.0; rv:2.0) Gecko/20100101 Firefox/4.0 Opera 12.14";
 	private int agentIdx = 7;
-	
-	String addTopic(String link) throws IOException {
-		String content = getPageFromUrl(link);
-		int pre = content.indexOf("data-permalink=");
-		pre = content.indexOf("\"", pre);
-		int post = content.indexOf("\"", pre + 1);
-		for (int i = 0; i < 25; i++) {
-			if (pre == -1) {
-				System.out.println("Hit the end.");
-				break;
-			}
-			
-			String topicURL = content.substring(pre + 1, post);
-			topic.add(prefix + topicURL + "?limit=500");
-			if (i < 24) {
-				pre = content.indexOf("data-permalink=", post);
-				pre = content.indexOf("\"", pre);
-				post = content.indexOf("\"", pre + 1);				
-			}
-		}
-		pre = content.indexOf("class=\"next-button\"><a href=", post);
-		if (pre == -1) {
-			return "";
-		}
-		pre = content.indexOf("\"", pre + 20);
-		post = content.indexOf("\"", pre + 1);
-		
-		String next = content.substring(pre + 1, post);
-		return next;
-	}
 	
 	void changeUserAgent() {
 		String[] agentList = {"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36", 
@@ -167,12 +136,6 @@ public class Reddit_crawl {
 		}
 	}
 	
-	public void printTopicURL() {
-		for (String s : topic) {
-			System.out.println(s);
-		}
-	}
-	
 	public String getPageFromUrl(String link) throws IOException {
 		URL thePage = new URL(link);
 		URLConnection yc = thePage.openConnection();
@@ -188,7 +151,7 @@ public class Reddit_crawl {
 		in.close();
 		return output;
 	}
-
+	
 	public static void main(String[] args) throws IOException, InterruptedException {
 		// TODO Auto-generated method stub
 		Reddit_crawl test = new Reddit_crawl();
@@ -210,26 +173,13 @@ public class Reddit_crawl {
 		
 		long startTime = System.currentTimeMillis();
 		for (String linkSeed : total) {
-			String target = linkSeed;
-			String[] targetSeparate = target.split("/");
+			String[] targetSeparate = linkSeed.split("/");
 			test.directoryCheck(targetSeparate[4]);
-			for (int i = 0; i < 500; i++) {
-				System.out.println("\nPage " + i + " : " + target);
-				target = test.addTopic(target);
-				if (target.equals("")) {
-					System.out.println("No next page.");
-					break;
-				}
-				
-				//test.printTopicURL();
-				for (String element : topic) {
-					test.crawlPage(element);
-				}
-				topic.clear();
-				//Thread.sleep(DELAY);
-			}
+			test.crawlPage(linkSeed);
+			//Thread.sleep(DELAY);
 		}
 		long endTime = System.currentTimeMillis();
 		System.out.println("That took " + (endTime - startTime) + " milliseconds");
 	}
+
 }
