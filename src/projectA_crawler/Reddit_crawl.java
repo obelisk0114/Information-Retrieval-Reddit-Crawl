@@ -4,12 +4,14 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -90,15 +92,33 @@ public class Reddit_crawl {
 			System.out.println("Create new directory");
 		}
 		else {
-			System.out.println("Already");
+			System.out.println("Already exist");
 		}
+	}
+	
+	String getURLencode(String[] sep) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("https:/");
+		for (int i = 1; i < sep.length - 2; i++) {
+			sb.append(sep[i] + "/");
+		}
+		try {
+			sb.append(URLEncoder.encode(sep[sep.length - 2], "UTF-8"));
+			sb.append("/" + sep[sep.length - 1]);
+		} catch (IOException e) {
+			e.printStackTrace();
+			sb.append(sep[sep.length - 2]);
+			sb.append("/" + sep[sep.length - 1]);
+		}
+		return sb.toString();
 	}
 	
 	void crawlPage(String link) {
 		try {
 			// create the output file and use 'UTF-8' encoding
 			String[] sepLink = link.split("/");
-			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 2] + ".txt";
+			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 3]
+					+ "-" + sepLink[sepLink.length - 2] + ".txt";
 			File file = new File(fileName);
 			if (file.exists()) {
 				System.out.println("Exists: " + sepLink[sepLink.length - 2]);
@@ -109,7 +129,7 @@ public class Reddit_crawl {
 				    new FileOutputStream(file), "UTF-8"));
 			
 			writer.write(link + "\n\n\n");
-			String content = getPageFromUrl(link);
+			String content = getPageFromUrl(getURLencode(sepLink));
 			int pre = content.indexOf("data-author=");
 			int post;
 			String author;
@@ -172,11 +192,20 @@ public class Reddit_crawl {
 		// TODO Auto-generated method stub
 		Reddit_crawl test = new Reddit_crawl();
 		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
-		String target = "https://www.reddit.com/r/Showerthoughts/";
+		FileReader fr = new FileReader("seed.txt");
+		BufferedReader br = new BufferedReader(fr);
+		List<String> total = new ArrayList<String>();
+		String line;
+		while ((line = br.readLine()) != null) {
+			total.add(line);
+		}
+		br.close();
+		
+		String target = total.get(1);
 		String[] targetSeparate = target.split("/");
 		test.directoryCheck(targetSeparate[4]);
 		long startTime = System.currentTimeMillis();
-		for (int i = 0; i < 13; i++) {
+		for (int i = 0; i < 8; i++) {
 			target = test.addTopic(target);
 			if (target.equals("")) {
 				System.out.println("No next page.");
