@@ -191,6 +191,12 @@ public class Reddit_crawl {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		// TODO Auto-generated method stub
 		Reddit_crawl test = new Reddit_crawl();
+		String dirName = "data";
+		File dir = new File(dirName);
+		if (!dir.exists()) {
+			dir.mkdir();
+			System.out.println("Create data directory");
+		}
 		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
 		FileReader fr = new FileReader("seed.txt");
 		BufferedReader br = new BufferedReader(fr);
@@ -201,24 +207,26 @@ public class Reddit_crawl {
 		}
 		br.close();
 		
-		String target = total.get(1);
-		String[] targetSeparate = target.split("/");
-		test.directoryCheck(targetSeparate[4]);
 		long startTime = System.currentTimeMillis();
-		for (int i = 0; i < 8; i++) {
-			target = test.addTopic(target);
-			if (target.equals("")) {
-				System.out.println("No next page.");
-				break;
+		for (String linkSeed : total) {
+			String target = linkSeed;
+			String[] targetSeparate = target.split("/");
+			test.directoryCheck(targetSeparate[4]);
+			for (int i = 0; i < 5; i++) {
+				target = test.addTopic(target);
+				if (target.equals("")) {
+					System.out.println("No next page.");
+					break;
+				}
+				
+				System.out.println("\nPage " + i);
+				//test.printTopicURL();
+				for (String element : topic) {
+					test.crawlPage(element);
+				}
+				topic.clear();
+				//Thread.sleep(DELAY);
 			}
-			
-			System.out.println("\nPage " + i);
-			//test.printTopicURL();
-			for (String element : topic) {
-				test.crawlPage(element);
-			}
-			topic.clear();
-			//Thread.sleep(DELAY);
 		}
 		long endTime = System.currentTimeMillis();
 		System.out.println("That took " + (endTime - startTime) + " milliseconds");
