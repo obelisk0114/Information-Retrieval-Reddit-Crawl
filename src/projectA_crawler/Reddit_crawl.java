@@ -101,28 +101,44 @@ public class Reddit_crawl {
 			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 2] + ".txt";
 			File file = new File(fileName);
 			if (file.exists()) {
-				System.out.println("Exists: " + sepLink[sepLink.length - 1]);
+				System.out.println("Exists: " + sepLink[sepLink.length - 2]);
 				return;
 			}
 			
 			Writer writer = new BufferedWriter(new OutputStreamWriter(
 				    new FileOutputStream(file), "UTF-8"));
 			
+			writer.write(link + "\n\n\n");
 			String content = getPageFromUrl(link);
-			int pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">");
-			int post = content.indexOf("</div>", pre + 2);
-			pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
+			int pre = content.indexOf("data-author=");
+			int post;
+			String author;
+			String date;
+			String comments;
 			while (pre != -1) {
+				pre = content.indexOf("\"", pre + 1);
+				post = content.indexOf("\"", pre + 1);
+				author = content.substring(pre + 1, post);
+				
+				pre = content.indexOf("time title=", post + 1);
+				pre = content.indexOf("\"", pre + 1);
+				post = content.indexOf("\"", pre + 1);
+				date = content.substring(pre + 1, post);
+				
+				writer.write(author + "     " + date + "\n\n");
+				
+				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
+				if (pre == -1)
+					break;
 				pre = content.indexOf("p", pre + 1);
 				post = content.indexOf("</div>", pre + 2);
-				
-				String comments = content.substring(pre + 2, post);
+				comments = content.substring(pre + 2, post);
 				comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
 				comments = comments.replaceAll("<p>", "\n");
 				
 				writer.write(comments);
-				writer.write("\n\n");
-				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
+				writer.write("\n\n\n");
+				pre = content.indexOf("data-author=", post + 1);
 			}
 			writer.close();
 		} catch (IOException e) {
@@ -160,7 +176,7 @@ public class Reddit_crawl {
 		String[] targetSeparate = target.split("/");
 		test.directoryCheck(targetSeparate[4]);
 		long startTime = System.currentTimeMillis();
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 13; i++) {
 			target = test.addTopic(target);
 			if (target.equals("")) {
 				System.out.println("No next page.");
