@@ -29,20 +29,17 @@ public class Reddit_crawl {
 	String addTopic(String link) throws IOException {
 		String content = getPageFromUrl(link);
 		int pre = content.indexOf("data-permalink=");
-		pre = content.indexOf("\"", pre);
-		int post = content.indexOf("\"", pre + 1);
+		int post = 0;
 		for (int i = 0; i < 25; i++) {
-			if (pre == -1) {
-				System.out.println("Hit the end.");
-				break;
-			}
+			pre = content.indexOf("\"", pre);
+			post = content.indexOf("\"", pre + 1);
 			
 			String topicURL = content.substring(pre + 1, post);
 			topic.add(prefix + topicURL + "?limit=500");
-			if (i < 24) {
-				pre = content.indexOf("data-permalink=", post);
-				pre = content.indexOf("\"", pre);
-				post = content.indexOf("\"", pre + 1);				
+			pre = content.indexOf("data-permalink=", post);
+			if (pre == -1) {
+				System.out.println("Hit the end.");
+				break;
 			}
 		}
 		pre = content.indexOf("class=\"next-button\"><a href=", post);
