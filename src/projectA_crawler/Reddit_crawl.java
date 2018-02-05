@@ -46,12 +46,12 @@ public class Reddit_crawl {
 			}
 		}
 		pre = content.indexOf("class=\"next-button\"><a href=", post);
-		pre = content.indexOf("\"", pre + 20);
-		post = content.indexOf("\"", pre + 1);
-		
 		if (pre == -1) {
 			return "";
 		}
+		pre = content.indexOf("\"", pre + 20);
+		post = content.indexOf("\"", pre + 1);
+		
 		String next = content.substring(pre + 1, post);
 		return next;
 	}
