@@ -212,14 +212,14 @@ public class Reddit_crawl {
 			String target = linkSeed;
 			String[] targetSeparate = target.split("/");
 			test.directoryCheck(targetSeparate[4]);
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 500; i++) {
+				System.out.println("\nPage " + i + " : " + target);
 				target = test.addTopic(target);
 				if (target.equals("")) {
 					System.out.println("No next page.");
 					break;
 				}
 				
-				System.out.println("\nPage " + i);
 				//test.printTopicURL();
 				for (String element : topic) {
 					test.crawlPage(element);
