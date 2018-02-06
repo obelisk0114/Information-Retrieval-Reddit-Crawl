@@ -15,6 +15,8 @@ import java.net.URLEncoder;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.net.SocketTimeoutException;
+import java.net.ProtocolException;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -138,6 +140,12 @@ public class Reddit_crawl_links {
 			}
 			writer.write(allComments.toString());
 			writer.close();
+		} catch (SocketTimeoutException e) {
+			System.out.println("\n" + link);
+			e.printStackTrace();
+		} catch (ProtocolException e) {
+			System.out.println("\n" + link);
+			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
