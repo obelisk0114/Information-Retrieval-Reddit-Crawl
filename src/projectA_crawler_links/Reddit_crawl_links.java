@@ -82,22 +82,27 @@ public class Reddit_crawl_links {
 	}
 	
 	void crawlPage(String link) {
+		// create the output file and use 'UTF-8' encoding
+		String[] sepLink = link.split("/");
+		String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 3]
+				+ "-" + sepLink[sepLink.length - 2] + ".json";
+		File file = new File(fileName);
+		if (file.exists()) {
+			System.out.println("Exists: " + sepLink[sepLink.length - 3]
+					+ "-" + sepLink[sepLink.length - 2]);
+			return;
+		}
+		JSONArray allComments = new JSONArray();
+		
 		try {
-			// create the output file and use 'UTF-8' encoding
-			String[] sepLink = link.split("/");
-			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 3]
-					+ "-" + sepLink[sepLink.length - 2] + ".txt";
-			File file = new File(fileName);
-			if (file.exists()) {
-				System.out.println("Exists: " + sepLink[sepLink.length - 3]
-						+ "-" + sepLink[sepLink.length - 2]);
-				return;
-			}
-			
 			Writer writer = new BufferedWriter(new OutputStreamWriter(
 				    new FileOutputStream(file), "UTF-8"));
 			
-			writer.write(link + "\n\n\n");
+			JSONObject permalink = new JSONObject();
+			permalink.put("permalink", link);
+			
+			allComments.put(permalink);
+	        
 			String content = getPageFromUrl(getURLencode(sepLink));
 			int pre = content.indexOf("data-author=");
 			int post;
@@ -105,6 +110,7 @@ public class Reddit_crawl_links {
 			String date;
 			String comments;
 			while (pre != -1) {
+				JSONObject eachComments = new JSONObject();
 				pre = content.indexOf("\"", pre + 1);
 				post = content.indexOf("\"", pre + 1);
 				author = content.substring(pre + 1, post);
@@ -114,7 +120,8 @@ public class Reddit_crawl_links {
 				post = content.indexOf("\"", pre + 1);
 				date = content.substring(pre + 1, post);
 				
-				writer.write(author + "     " + date + "\n\n");
+				eachComments.put("author", author);
+				eachComments.put("date", date);
 				
 				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
 				if (pre == -1)
@@ -125,10 +132,11 @@ public class Reddit_crawl_links {
 				comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
 				comments = comments.replaceAll("<p>", "\n");
 				
-				writer.write(comments);
-				writer.write("\n\n\n");
+				eachComments.put("comments", comments);
+				allComments.put(eachComments);
 				pre = content.indexOf("data-author=", post + 1);
 			}
+			writer.write(allComments.toString());
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
