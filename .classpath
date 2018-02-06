@@ -2,5 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/15T-J000/Documents/GitHub/Information-Retrieval-Reddit-Crawl/library/json-20180130.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

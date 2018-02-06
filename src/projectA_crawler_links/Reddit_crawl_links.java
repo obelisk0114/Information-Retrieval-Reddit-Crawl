@@ -1,4 +1,4 @@
-package projectA_crawler;
+package projectA_crawler_links;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,9 +19,11 @@ import java.net.CookiePolicy;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class Reddit_crawl_links {
 	public static int DELAY = 1000;
-	//private static String prefix = "https://www.reddit.com";
 	private String USER_AGENT = "Mozilla/5.0 (Windows NT 6.0; rv:2.0) Gecko/20100101 Firefox/4.0 Opera 12.14";
 	private int agentIdx = 7;
 	
@@ -59,9 +61,6 @@ public class Reddit_crawl_links {
 		if (!dir.exists()) {
 			dir.mkdir();
 			System.out.println("Create new directory");
-		}
-		else {
-			System.out.println("Already exist");
 		}
 	}
 	
@@ -154,7 +153,7 @@ public class Reddit_crawl_links {
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
 		// TODO Auto-generated method stub
-		Reddit_crawl test = new Reddit_crawl();
+		Reddit_crawl_links test = new Reddit_crawl_links();
 		String dirName = "data";
 		File dir = new File(dirName);
 		if (!dir.exists()) {
@@ -167,7 +166,7 @@ public class Reddit_crawl_links {
 		List<String> total = new ArrayList<String>();
 		String line;
 		while ((line = br.readLine()) != null) {
-			total.add(line);
+			total.add(line + "?limit=500");
 		}
 		br.close();
 		
