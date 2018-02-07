@@ -128,10 +128,17 @@ public class Reddit_crawl {
 			Writer writer = new BufferedWriter(new OutputStreamWriter(
 				    new FileOutputStream(file), "UTF-8"));
 			
-			writer.write(link + "\n\n\n");
+			writer.write(link + "\n");
 			String content = getPageFromUrl(getURLencode(sepLink));
-			int pre = content.indexOf("data-author=");
-			int post;
+			
+			int pre = content.indexOf("<head><title");
+			pre = content.indexOf(">", pre + 10);
+			int post = content.indexOf(":", pre);
+			String title = content.substring(pre + 1, post);
+			writer.write(title + "\n\n\n");
+			
+			pre = content.indexOf("data-author=", post);
+			int nextAuthorPre;
 			String author;
 			String date;
 			String comments;
@@ -145,20 +152,25 @@ public class Reddit_crawl {
 				post = content.indexOf("\"", pre + 1);
 				date = content.substring(pre + 1, post);
 				
-				writer.write(author + "     " + date + "\n\n");
+				writer.write(author + "\n" + date);
 				
 				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
 				if (pre == -1)
 					break;
-				pre = content.indexOf("p", pre + 1);
-				post = content.indexOf("</div>", pre + 2);
-				comments = content.substring(pre + 2, post);
-				comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
-				comments = comments.replaceAll("<p>", "\n");
 				
-				writer.write(comments);
+				nextAuthorPre = content.indexOf("data-author=", post);
+				if (nextAuthorPre == -1 || pre < nextAuthorPre) {					
+					writer.write("\n\n");
+					pre = content.indexOf("p", pre + 1);
+					post = content.indexOf("</div>", pre + 2);
+					comments = content.substring(pre + 2, post);
+					comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
+					comments = comments.replaceAll("<p>", "\n");
+					
+					writer.write(comments);
+				}
 				writer.write("\n\n\n");
-				pre = content.indexOf("data-author=", post + 1);
+				pre = nextAuthorPre;
 			}
 			writer.close();
 		} catch (SocketTimeoutException e) {
