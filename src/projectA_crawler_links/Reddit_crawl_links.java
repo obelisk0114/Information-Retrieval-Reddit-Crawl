@@ -21,9 +21,6 @@ import java.net.ProtocolException;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 public class Reddit_crawl_links {
 	public static int DELAY = 1000;
 	private String USER_AGENT = "Mozilla/5.0 (Windows NT 6.0; rv:2.0) Gecko/20100101 Firefox/4.0 Opera 12.14";
@@ -87,34 +84,26 @@ public class Reddit_crawl_links {
 		// create the output file and use 'UTF-8' encoding
 		String[] sepLink = link.split("/");
 		String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 3]
-				+ "-" + sepLink[sepLink.length - 2] + ".json";
+				+ "-" + sepLink[sepLink.length - 2] + ".txt";
 		File file = new File(fileName);
 		if (file.exists()) {
 			System.out.println("Exists: " + sepLink[sepLink.length - 3]
 					+ "-" + sepLink[sepLink.length - 2]);
 			return;
 		}
-		JSONArray allComments = new JSONArray();
 		
 		try {
 			Writer writer = new BufferedWriter(new OutputStreamWriter(
 				    new FileOutputStream(file), "UTF-8"));
 			
-			JSONObject permalink = new JSONObject();
-			permalink.put("permalink", link);
-			
-			allComments.put(permalink);
-	        
+			writer.write(link + "\n");
 			String content = getPageFromUrl(getURLencode(sepLink));
 			
 			int pre = content.indexOf("<head><title");
 			pre = content.indexOf(">", pre + 10);
 			int post = content.indexOf(":", pre);
 			String title = content.substring(pre + 1, post);
-			JSONObject mainTitle = new JSONObject();
-			mainTitle.put("title", title);
-			
-			allComments.put(mainTitle);
+			writer.write(title + "\n\n\n");
 			
 			pre = content.indexOf("data-author=", post);
 			int nextAuthorPre;
@@ -122,7 +111,6 @@ public class Reddit_crawl_links {
 			String date;
 			String comments;
 			while (pre != -1) {
-				JSONObject eachComments = new JSONObject();
 				pre = content.indexOf("\"", pre + 1);
 				post = content.indexOf("\"", pre + 1);
 				author = content.substring(pre + 1, post);
@@ -132,34 +120,27 @@ public class Reddit_crawl_links {
 				post = content.indexOf("\"", pre + 1);
 				date = content.substring(pre + 1, post);
 				
-				eachComments.put("author", author);
-				eachComments.put("date", date);
+				writer.write(author + "\n" + date);
 				
 				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
 				if (pre == -1) {
-					eachComments.put("comments", "");
-					allComments.put(eachComments);
 					break;
 				}
 				
 				nextAuthorPre = content.indexOf("data-author=", post);
-				if (nextAuthorPre != -1 && pre > nextAuthorPre) {
-					eachComments.put("comments", "");
-				}
-				else {
+				if (nextAuthorPre == -1 || pre < nextAuthorPre) {					
+					writer.write("\n\n");
 					pre = content.indexOf("p", pre + 1);
 					post = content.indexOf("</div>", pre + 2);
 					comments = content.substring(pre + 2, post);
 					comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
 					comments = comments.replaceAll("<p>", "\n");
 					
-					eachComments.put("comments", comments);					
+					writer.write(comments);
 				}
-				
+				writer.write("\n\n\n");
 				pre = nextAuthorPre;
-				allComments.put(eachComments);
 			}
-			writer.write(allComments.toString());
 			writer.close();
 		} catch (SocketTimeoutException e) {
 			System.out.println("\n" + link);
