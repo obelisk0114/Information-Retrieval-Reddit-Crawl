@@ -106,8 +106,18 @@ public class Reddit_crawl_links {
 			allComments.put(permalink);
 	        
 			String content = getPageFromUrl(getURLencode(sepLink));
-			int pre = content.indexOf("data-author=");
-			int post;
+			
+			int pre = content.indexOf("<head><title");
+			pre = content.indexOf(">", pre + 10);
+			int post = content.indexOf(":", pre);
+			String title = content.substring(pre + 1, post);
+			JSONObject mainTitle = new JSONObject();
+			mainTitle.put("title", title);
+			
+			allComments.put(mainTitle);
+			
+			pre = content.indexOf("data-author=", post);
+			int nextAuthorPre;
 			String author;
 			String date;
 			String comments;
@@ -126,17 +136,28 @@ public class Reddit_crawl_links {
 				eachComments.put("date", date);
 				
 				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
-				if (pre == -1)
+				if (pre == -1) {
+					eachComments.put("comments", "");
+					allComments.put(eachComments);
 					break;
-				pre = content.indexOf("p", pre + 1);
-				post = content.indexOf("</div>", pre + 2);
-				comments = content.substring(pre + 2, post);
-				comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
-				comments = comments.replaceAll("<p>", "\n");
+				}
 				
-				eachComments.put("comments", comments);
+				nextAuthorPre = content.indexOf("data-author=", post);
+				if (nextAuthorPre != -1 && pre > nextAuthorPre) {
+					eachComments.put("comments", "");
+				}
+				else {
+					pre = content.indexOf("p", pre + 1);
+					post = content.indexOf("</div>", pre + 2);
+					comments = content.substring(pre + 2, post);
+					comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
+					comments = comments.replaceAll("<p>", "\n");
+					
+					eachComments.put("comments", comments);					
+				}
+				
+				pre = nextAuthorPre;
 				allComments.put(eachComments);
-				pre = content.indexOf("data-author=", post + 1);
 			}
 			writer.write(allComments.toString());
 			writer.close();
