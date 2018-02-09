@@ -61,7 +61,7 @@ public class crawler extends Thread {
 		String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 3]
 				+ "-" + sepLink[sepLink.length - 2] + ".txt";
 		File file = new File(fileName);
-		if (file.exists()) {
+		if (file.exists() && file.length() > 23) {     // Link is larger than 23 B.
 			System.out.println("Exists: " + sepLink[sepLink.length - 3]
 					+ "-" + sepLink[sepLink.length - 2]);
 			return;

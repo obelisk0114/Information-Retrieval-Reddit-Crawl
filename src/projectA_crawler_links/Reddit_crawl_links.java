@@ -15,24 +15,18 @@ public class Reddit_crawl_links {
 	public static int DELAY = 1000;
 	private static int threadPool = 10;        // The number of threads
 	
-	void directoryCheck(String s) {            // Create subreddit folder
-		String dirName = "data/" + s;
-		File dir = new File(dirName);
+	void directoryCheck(String s) {            // Create folder
+		File dir = new File(s);
 		if (!dir.exists()) {
 			dir.mkdir();
-			System.out.println("Create new directory");
+			System.out.println("Create directory " + s);
 		}
 	}
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
 		// TODO Auto-generated method stub
 		Reddit_crawl_links test = new Reddit_crawl_links();
-		String dirName = "data";
-		File dir = new File(dirName);
-		if (!dir.exists()) {
-			dir.mkdir();
-			System.out.println("Create data directory");
-		}
+		test.directoryCheck("data");
 		
 		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
 		
@@ -50,7 +44,8 @@ public class Reddit_crawl_links {
 		String line;
 		while ((line = br.readLine()) != null) {
 			String[] targetSeparate = line.split("/");
-			test.directoryCheck(targetSeparate[4]); // Create directory when reads file
+			String dirName = "data/" + targetSeparate[4];
+			test.directoryCheck(dirName);        // Create directory when reads file
 			total.get(threadCounter).add(line + "?limit=500");   // Get 500 comments
 			threadCounter = (threadCounter + 1) % threadPool;
 		}
