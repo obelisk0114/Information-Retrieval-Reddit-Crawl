@@ -12,6 +12,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -172,6 +173,13 @@ public class Reddit_crawl {
 				pre = nextAuthorPre;
 			}
 			writer.close();
+		} catch (UnknownHostException e) {
+			if (e.getMessage().equals("www.reddit.com")) {
+				System.out.println("Unknown host: Reddit");
+				System.out.println("Maybe your internet is out of work.");
+			}
+			System.out.println("\n" + link);
+			e.printStackTrace();
 		} catch (SocketTimeoutException e) {
 			System.out.println("\n" + link);
 			e.printStackTrace();
@@ -193,7 +201,7 @@ public class Reddit_crawl {
 		URL thePage = new URL(link);
 		URLConnection yc = thePage.openConnection();
 		yc.setRequestProperty("User-Agent", USER_AGENT);
-		yc.setConnectTimeout(1000);
+		yc.setConnectTimeout(5000);
 		// Change encoding to 'UTF-8'
 		BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream(), "UTF-8"));
 		String inputLine;

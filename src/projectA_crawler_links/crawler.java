@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.net.URL;
 import java.net.URLConnection;
 //import java.net.URLEncoder;
@@ -122,6 +123,13 @@ public class crawler extends Thread {
 				pre = nextAuthorPre;
 			}
 			writer.close();
+		} catch (UnknownHostException e) {
+			if (e.getMessage().equals("www.reddit.com")) {
+				System.out.println("Unknown host: Reddit");
+				System.out.println("Maybe your internet is out of work.");
+			}
+			System.out.println("\n" + link);
+			e.printStackTrace();
 		} catch (SocketTimeoutException e) {
 			System.out.println("\n" + link);
 			e.printStackTrace();
@@ -144,7 +152,7 @@ public class crawler extends Thread {
 		URL thePage = new URL(link);
 		URLConnection yc = thePage.openConnection();
 		yc.setRequestProperty("User-Agent", USER_AGENT);
-		yc.setConnectTimeout(1000);
+		yc.setConnectTimeout(5000);
 		// Change encoding to 'UTF-8'
 		BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream(), "UTF-8"));
 		String inputLine;
