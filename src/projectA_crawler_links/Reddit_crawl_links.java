@@ -30,7 +30,32 @@ public class Reddit_crawl_links {
 		
 		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
 		
-		FileReader fr = new FileReader("seed.txt");
+		String inputData = "seed.txt";
+		try {
+			switch (args.length) {
+			case 0:
+				break;
+			case 1:
+				threadPool = Integer.parseInt(args[0]);
+				break;
+			case 2:
+				inputData = args[0];
+				threadPool = Integer.parseInt(args[1]);
+				break;
+			default:
+				System.out.println("\n    Invalid input parameters!"
+					+ "\n    Usage: java -jar reddit.jar             # data = seed.txt, threads = 10"
+					+ "\n    Usage: java -jar reddit.jar <m>         # data = seed.txt, threads = m"
+					+ "\n    Usage: java -jar reddit.jar <s> <m>     # data = s, threads = m\n");
+				System.exit(1);
+			}
+		} catch (NumberFormatException ne) {
+			System.out.println("Number of threads must be integer.\n");
+			ne.printStackTrace();
+			System.exit(1);
+		}
+		
+		FileReader fr = new FileReader(inputData);
 		BufferedReader br = new BufferedReader(fr);
 		
 		// Each threads have their own link pool.
