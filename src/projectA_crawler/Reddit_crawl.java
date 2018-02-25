@@ -38,7 +38,7 @@ public class Reddit_crawl {
 			post = content.indexOf("\"", pre + 1);
 			
 			String topicURL = content.substring(pre + 1, post);
-			topic.add(prefix + topicURL + "?limit=500");
+			topic.add(prefix + topicURL);
 			pre = content.indexOf("data-permalink=", post);
 			if (pre == -1) {
 				System.out.println("Hit the end.");
@@ -98,17 +98,16 @@ public class Reddit_crawl {
 	String getURLencode(String[] sep) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("https:/");
-		for (int i = 1; i < sep.length - 2; i++) {
+		for (int i = 1; i < sep.length - 1; i++) {
 			sb.append(sep[i] + "/");
 		}
 		try {
-			sb.append(URLEncoder.encode(sep[sep.length - 2], "UTF-8"));
-			sb.append("/" + sep[sep.length - 1]);
+			sb.append(URLEncoder.encode(sep[sep.length - 1], "UTF-8"));
 		} catch (IOException e) {
 			e.printStackTrace();
-			sb.append(sep[sep.length - 2]);
-			sb.append("/" + sep[sep.length - 1]);
+			sb.append(sep[sep.length - 1]);
 		}
+		sb.append("/");
 		return sb.toString();
 	}
 	
@@ -116,12 +115,12 @@ public class Reddit_crawl {
 		try {
 			// create the output file and use 'UTF-8' encoding
 			String[] sepLink = link.split("/");
-			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 3]
-					+ "-" + sepLink[sepLink.length - 2] + ".txt";
+			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 2]
+					+ "-" + sepLink[sepLink.length - 1] + ".txt";
 			File file = new File(fileName);
 			if (file.exists() && file.length() > 23) {    // Link is larger than 23 B.
-				System.out.println("Exists: " + sepLink[sepLink.length - 3]
-						+ "-" + sepLink[sepLink.length - 2]);
+				System.out.println("Exists: " + sepLink[sepLink.length - 2]
+						+ "-" + sepLink[sepLink.length - 1]);
 				return;
 			}
 			
@@ -129,10 +128,10 @@ public class Reddit_crawl {
 				    new FileOutputStream(file), "UTF-8"));
 			
 			writer.write(link + "\n");
-			String content = getPageFromUrl(getURLencode(sepLink));
+			String content = getPageFromUrl(getURLencode(sepLink) + "?limit=500");
 			
 			// load more comments & continue this thread
-			More_comments loadMore = new More_comments(content, writer, USER_AGENT);
+			More_comments loadMore = new More_comments(link, content, writer, USER_AGENT); 
 			
 			// Get and write title
 			int pre = content.indexOf("<head><title");
@@ -182,10 +181,30 @@ public class Reddit_crawl {
 					writer.write(comments);
 				}
 				writer.write("\n\n\n");
-				if (loadMore.getContinueThreadStart() != null &&
-						nextAuthorPre > loadMore.getContinueThreadStart()) {
-					loadMore.writeContinueThreadToFile(fileName);
+				
+				// continue this thread & load more comments
+				if (loadMore.getContinueThreadStart() != -1 &&
+						loadMore.getMorechildrenStart() != -1) {
+					if (loadMore.getContinueThreadStart() > loadMore.getMorechildrenStart()) {
+						if (nextAuthorPre > loadMore.getMorechildrenStart()) {
+							loadMore.moreCommentsBranch(fileName, "load more comments");
+						}
+					}
+					else {  // getContinueThreadStart() < getMorechildrenStart()
+						if (nextAuthorPre > loadMore.getContinueThreadStart()) {
+							loadMore.moreCommentsBranch(fileName, "continue this thread");
+						}
+					}
 				}
+				else if (loadMore.getContinueThreadStart() != -1 &&
+						nextAuthorPre > loadMore.getContinueThreadStart()) {
+					loadMore.moreCommentsBranch(fileName, "continue this thread");
+				}
+				else if (loadMore.getMorechildrenStart() != -1 &&
+						nextAuthorPre > loadMore.getMorechildrenStart()) {
+					loadMore.moreCommentsBranch(fileName, "load more comments");
+				}
+				
 				pre = nextAuthorPre;
 			}
 			writer.close();

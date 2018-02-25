@@ -12,29 +12,34 @@ import java.net.SocketTimeoutException;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class More_comments {
-	private List<Integer> morechildrenStart;
-	private int morechildrenIdx;
-	private List<String> morechildrenString;
+	private List<Integer> morechildrenStart;   // The beginning index of "load more comments"
+	private int morechildrenIdx;               // Next beginning index of "load more comments"
+	private List<String> morechildrenString;   // The information array of "load more comments"
+	private LinkedList<String> childrenLinks;  // The links of all comments in "load more comments"
 	
-	private List<Integer> continueThreadStart;
-	private int continueThreadIdx;
-	private List<String> continueThreadString;
+	private List<Integer> continueThreadStart; // The beginning index of "continue this thread"
+	private int continueThreadIdx;             // Next beginning index of "continue this thread"
+	private List<String> continueThreadString; // The link of "continue this thread"
 	
 	private String USER_AGENT;
 	private String prefix = "https://www.reddit.com";
+	private String postLink;
 	private Writer writer;
 	
-	public More_comments(String content, Writer writer, String USER_AGENT) {
+	public More_comments(String link, String content, Writer writer, String USER_AGENT) {
 		morechildrenStart = new ArrayList<Integer>();
 		morechildrenIdx = 0;
 		morechildrenString = new ArrayList<String>();
+		childrenLinks = new LinkedList<String>();
 		
 		continueThreadStart = new ArrayList<Integer>();
 		continueThreadIdx = 0;
 		continueThreadString = new ArrayList<String>();
 		
+		this.postLink = link;
 		this.USER_AGENT = USER_AGENT;
 		this.writer = writer;
 		findContinueThread(content);
@@ -77,14 +82,42 @@ public class More_comments {
 		}
 	}
 	
+	public void retrieveUrl() {
+		String[] children = morechildrenString.get(morechildrenIdx).split(", ");
+		String idCollect = children[3];
+		String[] idArray = (idCollect.substring(1, idCollect.length() - 1)).split(",");
+		for (String s : idArray) {
+			childrenLinks.add(postLink + s + "/");
+		}
+	}
+	
+	public void moreCommentsBranch(String fileName, String commentType) {
+		int n;
+		if (commentType.equals("continue this thread")) {
+			n = 3;
+			String link = continueThreadString.get(continueThreadIdx);
+			writeMoreCommentsToFile(fileName, link, n);
+			continueThreadIdx++;
+		}
+		else if (commentType.equals("load more comments")) {
+			n = 2;
+			retrieveUrl();
+			for (String link : childrenLinks) {
+				writeMoreCommentsToFile(fileName, link, n);
+			}
+			childrenLinks.clear();
+			morechildrenIdx++;
+		}
+	}
+	
 	// Almost the same as crawlPage function in crawler
-	public void writeContinueThreadToFile(String fileName) {
-		String link = continueThreadString.get(continueThreadIdx);
+	public void writeMoreCommentsToFile(String fileName, String link, int n) {
 		try {
 			String contentContinue = getPageFromUrl2(link);
+			More_comments nextLoad = new More_comments(postLink, contentContinue, writer, USER_AGENT);
 			
 			int pre = 0;
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < n; i++) {
 				pre = contentContinue.indexOf("data-author=", pre + 1);
 			}
 			int post = pre;
@@ -124,8 +157,30 @@ public class More_comments {
 				writer.write("\n\n\n");
 				
 				pre = contentContinue.indexOf("data-author=", post);
+				
+				// continue this thread & load more comments
+				if (nextLoad.getContinueThreadStart() != -1 &&
+						nextLoad.getMorechildrenStart() != -1) {
+					if (nextLoad.getContinueThreadStart() > nextLoad.getMorechildrenStart()) {
+						if (pre > nextLoad.getMorechildrenStart()) {
+							nextLoad.moreCommentsBranch(fileName, "load more comments");
+						}
+					}
+					else {  // getContinueThreadStart() < getMorechildrenStart()
+						if (pre > nextLoad.getContinueThreadStart()) {
+							nextLoad.moreCommentsBranch(fileName, "continue this thread");
+						}
+					}
+				}
+				else if (nextLoad.getContinueThreadStart() != -1 &&
+						pre > nextLoad.getContinueThreadStart()) {
+					nextLoad.moreCommentsBranch(fileName, "continue this thread");
+				}
+				else if (nextLoad.getMorechildrenStart() != -1 &&
+						pre > nextLoad.getMorechildrenStart()) {
+					nextLoad.moreCommentsBranch(fileName, "load more comments");
+				}
 			}
-			continueThreadIdx++;
 		} catch (SocketTimeoutException e) {
 			System.out.println("\n" + link);
 			e.printStackTrace();
@@ -137,18 +192,18 @@ public class More_comments {
 		}
 	}
 	
-	public Integer getContinueThreadStart() {
+	public int getContinueThreadStart() {
 		if (continueThreadStart.size() > continueThreadIdx)
 			return continueThreadStart.get(continueThreadIdx);
 		else
-			return null;
+			return -1;
 	}
 	
-	public Integer getMorechildrenStart() {
+	public int getMorechildrenStart() {
 		if (morechildrenStart.size() > morechildrenIdx)
 			return morechildrenStart.get(morechildrenIdx);
 		else
-			return null;
+			return -1;
 	}
 	
 	private String getPageFromUrl2(String link) throws IOException {

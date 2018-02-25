@@ -59,12 +59,12 @@ public class crawler extends Thread {
 	void crawlPage(String link) {
 		// create the output file and use 'UTF-8' encoding
 		String[] sepLink = link.split("/");
-		String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 3]
-				+ "-" + sepLink[sepLink.length - 2] + ".txt";
+		String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 2]
+				+ "-" + sepLink[sepLink.length - 1] + ".txt";
 		File file = new File(fileName);
 		if (file.exists() && file.length() > 23) {     // Link is larger than 23 B.
-			System.out.println("Exists: " + sepLink[sepLink.length - 3]
-					+ "-" + sepLink[sepLink.length - 2]);
+			System.out.println("Exists: " + sepLink[sepLink.length - 2]
+					+ "-" + sepLink[sepLink.length - 1]);
 			return;
 		}
 		
@@ -73,10 +73,10 @@ public class crawler extends Thread {
 					new FileOutputStream(file), "UTF-8"));
 			
 			writer.write(link + "\n");
-			String content = getPageFromUrl(link);
+			String content = getPageFromUrl(link + "?limit=500");
 			
 			// load more comments & continue this thread 
-			More_comments loadMore = new More_comments(content, writer, USER_AGENT); 
+			More_comments loadMore = new More_comments(link, content, writer, USER_AGENT); 
 			
 			// Get and write title
 			int pre = content.indexOf("<head><title");
@@ -130,10 +130,30 @@ public class crawler extends Thread {
 					writer.write(comments);
 				}
 				writer.write("\n\n\n");
-				if (loadMore.getContinueThreadStart() != null &&
-						nextAuthorPre > loadMore.getContinueThreadStart()) {
-					loadMore.writeContinueThreadToFile(fileName);
+				
+				// continue this thread & load more comments
+				if (loadMore.getContinueThreadStart() != -1 &&
+						loadMore.getMorechildrenStart() != -1) {
+					if (loadMore.getContinueThreadStart() > loadMore.getMorechildrenStart()) {
+						if (nextAuthorPre > loadMore.getMorechildrenStart()) {
+							loadMore.moreCommentsBranch(fileName, "load more comments");
+						}
+					}
+					else {  // getContinueThreadStart() < getMorechildrenStart()
+						if (nextAuthorPre > loadMore.getContinueThreadStart()) {
+							loadMore.moreCommentsBranch(fileName, "continue this thread");
+						}
+					}
 				}
+				else if (loadMore.getContinueThreadStart() != -1 &&
+						nextAuthorPre > loadMore.getContinueThreadStart()) {
+					loadMore.moreCommentsBranch(fileName, "continue this thread");
+				}
+				else if (loadMore.getMorechildrenStart() != -1 &&
+						nextAuthorPre > loadMore.getMorechildrenStart()) {
+					loadMore.moreCommentsBranch(fileName, "load more comments");
+				}
+				
 				pre = nextAuthorPre;
 			}
 			writer.close();

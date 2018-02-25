@@ -71,7 +71,7 @@ public class Reddit_crawl_links {
 			String[] targetSeparate = line.split("/");
 			String dirName = "data/" + targetSeparate[4];
 			test.directoryCheck(dirName);        // Create directory when reads file
-			total.get(threadCounter).add(line + "?limit=500");   // Get 500 comments
+			total.get(threadCounter).add(line);
 			threadCounter = (threadCounter + 1) % threadPool;
 		}
 		br.close();
