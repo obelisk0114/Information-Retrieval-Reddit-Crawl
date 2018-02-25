@@ -75,6 +75,9 @@ public class crawler extends Thread {
 			writer.write(link + "\n");
 			String content = getPageFromUrl(link);
 			
+			// load more comments & continue this thread 
+			More_comments loadMore = new More_comments(content, writer, USER_AGENT); 
+			
 			// Get and write title
 			int pre = content.indexOf("<head><title");
 			pre = content.indexOf(">", pre + 10);
@@ -127,6 +130,10 @@ public class crawler extends Thread {
 					writer.write(comments);
 				}
 				writer.write("\n\n\n");
+				if (loadMore.getContinueThreadStart() != null &&
+						nextAuthorPre > loadMore.getContinueThreadStart()) {
+					loadMore.writeContinueThreadToFile(fileName);
+				}
 				pre = nextAuthorPre;
 			}
 			writer.close();

@@ -131,6 +131,10 @@ public class Reddit_crawl {
 			writer.write(link + "\n");
 			String content = getPageFromUrl(getURLencode(sepLink));
 			
+			// load more comments & continue this thread
+			More_comments loadMore = new More_comments(content, writer, USER_AGENT);
+			
+			// Get and write title
 			int pre = content.indexOf("<head><title");
 			pre = content.indexOf(">", pre + 10);
 			int post = content.indexOf(":", pre);
@@ -178,6 +182,10 @@ public class Reddit_crawl {
 					writer.write(comments);
 				}
 				writer.write("\n\n\n");
+				if (loadMore.getContinueThreadStart() != null &&
+						nextAuthorPre > loadMore.getContinueThreadStart()) {
+					loadMore.writeContinueThreadToFile(fileName);
+				}
 				pre = nextAuthorPre;
 			}
 			writer.close();
