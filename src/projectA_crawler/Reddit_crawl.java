@@ -84,11 +84,10 @@ public class Reddit_crawl {
 	}
 	
 	void directoryCheck(String s) {
-		String dirName = "data/" + s;
-		File dir = new File(dirName);
+		File dir = new File(s);
 		if (!dir.exists()) {
 			dir.mkdir();
-			System.out.println("Create new directory");
+			System.out.println("Create new directory " + s);
 		}
 		else {
 			System.out.println("Already exist");
@@ -119,7 +118,7 @@ public class Reddit_crawl {
 			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 3]
 					+ "-" + sepLink[sepLink.length - 2] + ".txt";
 			File file = new File(fileName);
-			if (file.exists()) {
+			if (file.exists() && file.length() > 23) {    // Link is larger than 23 B.
 				System.out.println("Exists: " + sepLink[sepLink.length - 3]
 						+ "-" + sepLink[sepLink.length - 2]);
 				return;
@@ -209,12 +208,8 @@ public class Reddit_crawl {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		// TODO Auto-generated method stub
 		Reddit_crawl test = new Reddit_crawl();
-		String dirName = "data";
-		File dir = new File(dirName);
-		if (!dir.exists()) {
-			dir.mkdir();
-			System.out.println("Create data directory");
-		}
+		test.directoryCheck("data");
+		
 		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
 		FileReader fr = new FileReader("seed.txt");
 		BufferedReader br = new BufferedReader(fr);
@@ -229,7 +224,8 @@ public class Reddit_crawl {
 		for (String linkSeed : total) {
 			String target = linkSeed;
 			String[] targetSeparate = target.split("/");
-			test.directoryCheck(targetSeparate[4]);
+			String dirName = "data/" + targetSeparate[4];
+			test.directoryCheck(dirName);
 			for (int i = 0; i < 500; i++) {
 				System.out.println("\nPage " + i + " : " + target);
 				target = test.addTopic(target);
