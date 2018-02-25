@@ -82,12 +82,17 @@ public class Reddit_crawl_links {
 		crawler[] crawlerList = new crawler[threadPool];
 		for (int i = 0; i < crawlerList.length; i++) {
 			crawlerList[i] = new crawler(total.get(i));
+			crawlerList[i].setName("crawler " + i);
 			crawlerList[i].start();
 		}
 		
 		// Wait for all of them to complete
-		for (crawler t : crawlerList) {
-			t.join();
+		try {
+			for (crawler t : crawlerList) {
+				t.join();
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 		
 		long endTime = System.currentTimeMillis();
