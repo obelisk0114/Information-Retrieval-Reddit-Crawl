@@ -131,6 +131,10 @@ public class Reddit_crawl {
 			writer.write(link + "\n");
 			String content = getPageFromUrl(getURLencode(sepLink));
 			
+			// load more comments & continue this thread
+			More_comments loadMore = new More_comments(content, writer, USER_AGENT);
+			
+			// Get and write title
 			int pre = content.indexOf("<head><title");
 			pre = content.indexOf(">", pre + 10);
 			int post = content.indexOf(":", pre);
@@ -143,10 +147,12 @@ public class Reddit_crawl {
 			String date;
 			String comments;
 			while (pre != -1) {
+				// Get author
 				pre = content.indexOf("\"", pre + 1);
 				post = content.indexOf("\"", pre + 1);
 				author = content.substring(pre + 1, post);
 				
+				// Get time
 				pre = content.indexOf("time title=", post + 1);
 				pre = content.indexOf("\"", pre + 1);
 				post = content.indexOf("\"", pre + 1);
@@ -154,6 +160,7 @@ public class Reddit_crawl {
 				
 				writer.write(author + "\n" + date);
 				
+				// Get content
 				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
 				if (pre == -1)
 					break;
