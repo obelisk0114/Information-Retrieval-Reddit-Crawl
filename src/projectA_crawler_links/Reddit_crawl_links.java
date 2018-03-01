@@ -142,6 +142,7 @@ public class Reddit_crawl_links {
 					break;
 				}
 				
+				// Check whether the poster only threw a link
 				nextAuthorPre = content.indexOf("data-author=", post);
 				if (nextAuthorPre != -1 && pre > nextAuthorPre) {
 					eachComments.put("comments", "");
@@ -151,7 +152,14 @@ public class Reddit_crawl_links {
 					post = content.indexOf("</div>", pre + 2);
 					comments = content.substring(pre + 2, post);
 					comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
-					comments = comments.replaceAll("<p>", "\n");
+					comments = comments.replaceAll("<p>", "\n");   // Mark paragraph
+					
+					// HTML Name substitution
+					// https://www.ascii.cl/htmlcodes.htm
+					comments = comments.replaceAll("&#39;", "'");
+					comments = comments.replaceAll("&amp;", "&");
+					comments = comments.replaceAll("&lt;", "<");
+					comments = comments.replaceAll("&gt;", ">");
 					
 					eachComments.put("comments", comments);					
 				}
