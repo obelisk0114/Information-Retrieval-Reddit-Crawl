@@ -143,7 +143,7 @@ public class Reddit_crawl_links {
 				eachComments.put("date", date);
 				
 				// Get content
-				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
+				pre = content.indexOf("usertext-body may-blank-within md-container", post);
 				if (pre == -1) {
 					eachComments.put("comments", "");
 					allComments.put(eachComments);
@@ -156,7 +156,7 @@ public class Reddit_crawl_links {
 					eachComments.put("comments", "");
 				}
 				else {
-					pre = content.indexOf("p", pre + 1);
+					pre = content.indexOf("p>", pre + 1);
 					post = content.indexOf("</div>", pre + 2);
 					comments = content.substring(pre + 2, post);
 					comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
