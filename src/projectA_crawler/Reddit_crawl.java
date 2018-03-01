@@ -219,7 +219,27 @@ public class Reddit_crawl {
 		test.directoryCheck("data");
 		
 		CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
-		FileReader fr = new FileReader("seed.txt");
+		
+		String inputData = "seed.txt";
+		try {
+			switch (args.length) {
+			case 0:
+				break;
+			case 1:
+				inputData = args[0];
+				break;
+			default:
+				System.out.println("\n    Invalid input parameters!"
+						+ "\n    Usage: java -jar reddit.jar             # data = seed.txt"
+						+ "\n    Usage: java -jar reddit.jar <s>     # data = s\n");
+				System.exit(1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		FileReader fr = new FileReader(inputData);
 		BufferedReader br = new BufferedReader(fr);
 		List<String> total = new ArrayList<String>();
 		String line;
