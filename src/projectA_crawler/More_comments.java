@@ -104,9 +104,9 @@ public class More_comments {
 				writer.write(author + "\n" + date);
 				
 				// Get content
-				pre = contentContinue.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
+				pre = contentContinue.indexOf("usertext-body may-blank-within md-container", post);
 				writer.write("\n\n");
-				pre = contentContinue.indexOf("p", pre + 1);
+				pre = contentContinue.indexOf("p>", pre + 1);
 				post = contentContinue.indexOf("</div>", pre + 2);
 				String comments = contentContinue.substring(pre + 2, post);
 				

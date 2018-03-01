@@ -105,7 +105,7 @@ public class crawler extends Thread {
 				writer.write(author + "\n" + date);
 				
 				// Get content
-				pre = content.indexOf("usertext-body may-blank-within md-container \" ><div class=\"md\">", post);
+				pre = content.indexOf("usertext-body may-blank-within md-container", post);
 				if (pre == -1) {
 					break;
 				}
@@ -114,7 +114,7 @@ public class crawler extends Thread {
 				nextAuthorPre = content.indexOf("data-author=", post);
 				if (nextAuthorPre == -1 || pre < nextAuthorPre) {					
 					writer.write("\n\n");
-					pre = content.indexOf("p", pre + 1);
+					pre = content.indexOf("p>", pre + 1);
 					post = content.indexOf("</div>", pre + 2);
 					comments = content.substring(pre + 2, post);
 					comments = comments.replaceAll("\\n|</p>|</blockquote>", "");
