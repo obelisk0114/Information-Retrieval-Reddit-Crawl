@@ -21,6 +21,8 @@ import java.net.SocketTimeoutException;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 public class Reddit_crawl {
 	public static int DELAY = 1000;
@@ -115,12 +117,10 @@ public class Reddit_crawl {
 		try {
 			// create the output file and use 'UTF-8' encoding
 			String[] sepLink = link.split("/");
-			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 2]
-					+ "-" + sepLink[sepLink.length - 1] + ".txt";
+			String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 2] + ".txt";
 			File file = new File(fileName);
 			if (file.exists() && file.length() > 23) {    // Link is larger than 23 B.
-				System.out.println("Exists: " + sepLink[sepLink.length - 2]
-						+ "-" + sepLink[sepLink.length - 1]);
+				System.out.println("Exists: " + sepLink[sepLink.length - 2]);
 				return;
 			}
 			
@@ -257,17 +257,30 @@ public class Reddit_crawl {
 		FileReader fr = new FileReader("seed.txt");
 		BufferedReader br = new BufferedReader(fr);
 		List<String> total = new ArrayList<String>();
+		
 		String line;
+		Set<String> set = new HashSet<String>();        // ID tags HashSet
+		Set<String> setAll = new HashSet<String>();     // complete link HashSet
+		List<String> missLinks = new ArrayList<String>();     // Record miss links
 		while ((line = br.readLine()) != null) {
 			total.add(line);
 		}
 		br.close();
+//		set = null;                // Notify gc
+//		setAll = null;             // Notify gc
 		
 		long startTime = System.currentTimeMillis();
 		for (String linkSeed : total) {
 			String target = linkSeed;
 			String[] targetSeparate = target.split("/");
 			String dirName = "data/" + targetSeparate[4];
+			
+			// Use ID tags as file name. Therefore, we need to check the situation 
+			// that ID tag exist but the article are different.
+			if (setAll.add(line) && !set.add(targetSeparate[targetSeparate.length - 2])) {
+				missLinks.add(line);
+			}
+			
 			test.directoryCheck(dirName);
 			for (int i = 0; i < 500; i++) {
 				System.out.println("\nPage " + i + " : " + target);
@@ -286,6 +299,14 @@ public class Reddit_crawl {
 			}
 		}
 		long endTime = System.currentTimeMillis();
+		
+		// Output miss links.
+		if (!missLinks.isEmpty()) {
+			for (String misslinkelement : missLinks) {
+				System.out.println("Miss links: " + misslinkelement);
+			}
+		}
+		
 		System.out.println("That took " + (endTime - startTime) + " milliseconds");
 	}
 }

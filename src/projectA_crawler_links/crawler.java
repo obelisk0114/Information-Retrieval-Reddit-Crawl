@@ -60,11 +60,10 @@ public class crawler extends Thread {
 		// create the output file and use 'UTF-8' encoding
 		String[] sepLink = link.split("/");
 		String fileName = "data/" + sepLink[4] + "/" + sepLink[sepLink.length - 2]
-				+ "-" + sepLink[sepLink.length - 1] + ".txt";
+				+ ".txt";
 		File file = new File(fileName);
 		if (file.exists() && file.length() > 23) {     // Link is larger than 23 B.
-			System.out.println("Exists: " + sepLink[sepLink.length - 2]
-					+ "-" + sepLink[sepLink.length - 1]);
+			System.out.println("Exists: " + sepLink[sepLink.length - 2]);
 			return;
 		}
 		

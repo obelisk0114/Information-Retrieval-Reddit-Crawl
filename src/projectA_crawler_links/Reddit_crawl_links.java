@@ -10,6 +10,8 @@ import java.net.CookiePolicy;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 public class Reddit_crawl_links {
 	public static int DELAY = 1000;
@@ -67,14 +69,26 @@ public class Reddit_crawl_links {
 		
 		int threadCounter = 0;
 		String line;
+		Set<String> set = new HashSet<String>();        // ID tags HashSet
+		Set<String> setAll = new HashSet<String>();     // complete link HashSet
+		List<String> missLinks = new ArrayList<String>();     // Record miss links
 		while ((line = br.readLine()) != null) {
 			String[] targetSeparate = line.split("/");
 			String dirName = "data/" + targetSeparate[4];
+			
+			// Use ID tags as file name. Therefore, we need to check the situation that
+			// ID tag exist but the article are different.
+			if (setAll.add(line) && !set.add(targetSeparate[targetSeparate.length - 2])) {
+				missLinks.add(line);
+			}
+			
 			test.directoryCheck(dirName);        // Create directory when reads file
 			total.get(threadCounter).add(line);
 			threadCounter = (threadCounter + 1) % threadPool;
 		}
 		br.close();
+		set = null;                // Notify gc
+		setAll = null;             // Notify gc
 		
 		long startTime = System.currentTimeMillis();
 		
@@ -96,6 +110,14 @@ public class Reddit_crawl_links {
 		}
 		
 		long endTime = System.currentTimeMillis();
+		
+		// Output miss links.
+		if (!missLinks.isEmpty()) {
+			for (String misslinkelement : missLinks) {
+				System.out.println("Miss links: " + misslinkelement);
+			}
+		}
+		
 		System.out.println("\nNumber of threads = " + threadPool);
 		System.out.println("That took " + (endTime - startTime) + " milliseconds\n");
 	}

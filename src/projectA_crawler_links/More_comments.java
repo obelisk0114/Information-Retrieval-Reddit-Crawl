@@ -25,7 +25,7 @@ public class More_comments {
 	private List<String> continueThreadString; // The link of "continue this thread"
 	
 	private String USER_AGENT;
-	private String prefix = "https://www.reddit.com";
+	//private String prefix = "https://www.reddit.com";
 	private String postLink;
 	private Writer writer;
 	
@@ -56,9 +56,10 @@ public class More_comments {
 			pre = content.indexOf("\"", pre);
 			post = content.indexOf("\"", pre + 1);
 			String continueUrl = content.substring(pre + 1, post);
+			String[] sepContinue = continueUrl.split("/");
 			
 			continueThreadStart.add(pre + 1);
-			continueThreadString.add(prefix + continueUrl);
+			continueThreadString.add(postLink + sepContinue[sepContinue.length - 1] + "/");
 			pre = content.indexOf("continue this thread", store);
 			store = pre + 1;
 		}
