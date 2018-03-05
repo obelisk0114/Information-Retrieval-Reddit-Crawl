@@ -13,6 +13,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.HttpURLConnection;
 //import java.net.URLEncoder;
 
 import java.util.List;
@@ -72,7 +73,7 @@ public class crawler extends Thread {
 					new FileOutputStream(file), "UTF-8"));
 			
 			writer.write(link + "\n");
-			String content = getPageFromUrl(link + "?limit=500");
+			String content = getPageFromUrl(link + "?limit=500", 0);
 			
 			// load more comments & continue this thread 
 			More_comments loadMore = new More_comments(link, content, writer, USER_AGENT); 
@@ -182,11 +183,39 @@ public class crawler extends Thread {
 		}
 	}
 	
-	public String getPageFromUrl(String link) throws IOException {
+	public String getPageFromUrl(String link, int number) throws IOException {
+		// Limit retry number
+		if (number >= 4) {
+			System.out.println("Unavailable: " + link);
+			return "";
+		}
+		
 		URL thePage = new URL(link);
 		URLConnection yc = thePage.openConnection();
 		yc.setRequestProperty("User-Agent", USER_AGENT);
 		yc.setConnectTimeout(5000);
+		
+		// http code 5xx
+		HttpURLConnection http = (HttpURLConnection)yc;
+		try {
+			if (http.getResponseCode() == 502) {
+				System.out.println("http 502 in: " + link);
+				number++;
+				sleep(1000);
+				return getPageFromUrl(link, number);
+			} 
+			else if (http.getResponseCode() == 503) {
+				System.out.println("http 503 in: " + link);
+				number++;
+				sleep(5000);
+				return getPageFromUrl(link, number);
+			}
+		} catch (InterruptedException ie) {
+			System.out.println("Interrupted: " + link);
+			ie.printStackTrace();
+			return "";
+		}
+		
 		// Change encoding to 'UTF-8'
 		BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream(), "UTF-8"));
 		String inputLine;

@@ -18,6 +18,7 @@ import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.ProtocolException;
 import java.net.SocketTimeoutException;
+import java.net.HttpURLConnection;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class Reddit_crawl {
 	private int agentIdx = 7;
 	
 	String addTopic(String link) throws IOException {
-		String content = getPageFromUrl(link);
+		String content = getPageFromUrl(link, 0);
 		int pre = content.indexOf("data-permalink=");
 		int post = 0;
 		for (int i = 0; i < 25; i++) {
@@ -128,7 +129,7 @@ public class Reddit_crawl {
 				    new FileOutputStream(file), "UTF-8"));
 			
 			writer.write(link + "\n");
-			String content = getPageFromUrl(getURLencode(sepLink) + "?limit=500");
+			String content = getPageFromUrl(getURLencode(sepLink) + "?limit=500", 0);
 			
 			// load more comments & continue this thread
 			More_comments loadMore = new More_comments(link, content, writer, USER_AGENT); 
@@ -233,11 +234,38 @@ public class Reddit_crawl {
 		}
 	}
 	
-	public String getPageFromUrl(String link) throws IOException {
+	public String getPageFromUrl(String link, int number) throws IOException {
+		// Limit retry number
+		if (number >= 4) {
+			System.out.println("Unavailable: " + link);
+			return "";
+		}
+		
 		URL thePage = new URL(link);
 		URLConnection yc = thePage.openConnection();
 		yc.setRequestProperty("User-Agent", USER_AGENT);
 		yc.setConnectTimeout(5000);
+		
+		// http code 5xx
+		HttpURLConnection http = (HttpURLConnection) yc;
+		try {
+			if (http.getResponseCode() == 502) {
+				System.out.println("http 502 in: " + link);
+				number++;
+				Thread.sleep(1000);
+				return getPageFromUrl(link, number);
+			} else if (http.getResponseCode() == 503) {
+				System.out.println("http 503 in: " + link);
+				number++;
+				Thread.sleep(5000);
+				return getPageFromUrl(link, number);
+			}
+		} catch (InterruptedException ie) {
+			System.out.println("Interrupted: " + link);
+			ie.printStackTrace();
+			return "";
+		}
+		
 		// Change encoding to 'UTF-8'
 		BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream(), "UTF-8"));
 		String inputLine;
