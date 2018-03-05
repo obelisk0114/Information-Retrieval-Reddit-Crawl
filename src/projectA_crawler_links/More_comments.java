@@ -47,40 +47,34 @@ public class More_comments {
 		findChildren(content);
 	}
 	
+	// continue this thread
 	public void findContinueThread(String content) {
-		int start = 0;
-		int pre = content.indexOf("continue this thread", start);
+		int pre = content.indexOf("deepthread");
 		int post = 0;
-		int store = pre + 1;
 		while (pre != -1) {
-			pre = content.lastIndexOf("a href=", pre);
-			pre = content.indexOf("\"", pre);
+			pre = content.indexOf("\"", pre + 12);
 			post = content.indexOf("\"", pre + 1);
 			String continueUrl = content.substring(pre + 1, post);
 			String[] sepContinue = continueUrl.split("/");
 			
 			continueThreadStart.add(pre + 1);
 			continueThreadString.add(postLink + sepContinue[sepContinue.length - 1] + "/");
-			pre = content.indexOf("continue this thread", store);
-			store = pre + 1;
+			pre = content.indexOf("deepthread", post);
 		}
 	}
 	
+	// load more comments
 	public void findChildren(String content) {
-		int start = 0;
-		int pre = content.indexOf("load more comments", start);
+		int pre = content.indexOf("return morechildren");         // morecomments
 		int post = 0;
-		int store = pre + 1;
 		while (pre != -1) {
-			pre = content.lastIndexOf("return morechildren", pre);
 			pre = content.indexOf("(", pre);
 			post = content.indexOf(")", pre + 1);
 			String loadChildren = content.substring(pre, post + 1);
 			
 			morechildrenStart.add(pre);
 			morechildrenString.add(loadChildren);
-			pre = content.indexOf("load more comments", store);
-			store = pre + 1;
+			pre = content.indexOf("return morechildren", post);   // morecomments
 		}
 	}
 	
