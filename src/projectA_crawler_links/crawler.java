@@ -80,7 +80,8 @@ public class crawler extends Thread {
 			// Get and write title
 			int pre = content.indexOf("<head><title");
 			pre = content.indexOf(">", pre + 10);
-			int post = content.indexOf(":", pre);
+			int post = content.indexOf("<", pre);
+			post = content.lastIndexOf(":", post);
 			String title = content.substring(pre + 1, post);
 			writer.write(title + "\n\n\n");
 			
