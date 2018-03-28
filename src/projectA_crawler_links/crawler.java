@@ -108,6 +108,7 @@ public class crawler extends Thread {
 				// Get content
 				pre = content.indexOf("usertext-body may-blank-within md-container", post);
 				if (pre == -1) {
+					writer.write("\n\n\n");
 					break;
 				}
 				
@@ -157,6 +158,7 @@ public class crawler extends Thread {
 				
 				pre = nextAuthorPre;
 			}
+			writer.write("\n\n\n\n\n");          // For Hadoop
 			writer.close();
 		} catch (UnknownHostException e) {
 			if (e.getMessage().equals("www.reddit.com")) {
@@ -172,6 +174,7 @@ public class crawler extends Thread {
 			System.out.println("\n" + link);
 			e.printStackTrace();
 		} catch (IOException e) {
+			System.out.println("\n" + link);
 			e.printStackTrace();
 		}
 	}
@@ -199,14 +202,12 @@ public class crawler extends Thread {
 		HttpURLConnection http = (HttpURLConnection)yc;
 		try {
 			if (http.getResponseCode() == 502) {
-				System.out.println("http 502 in: " + link);
-				number++;
-				sleep(1000);
+				System.out.println((++number) + " time; http 502 in: " + link);
+				sleep(2000);
 				return getPageFromUrl(link, number);
 			} 
 			else if (http.getResponseCode() == 503) {
-				System.out.println("http 503 in: " + link);
-				number++;
+				System.out.println((++number) + " time; http 503 in: " + link);
 				sleep(5000);
 				return getPageFromUrl(link, number);
 			}

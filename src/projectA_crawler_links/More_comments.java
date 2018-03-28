@@ -184,6 +184,7 @@ public class More_comments {
 			System.out.println("\n" + link);
 			e.printStackTrace();
 		} catch (IOException e) {
+			System.out.println("\n" + link);
 			e.printStackTrace();
 		}
 	}
@@ -218,13 +219,11 @@ public class More_comments {
 		HttpURLConnection http = (HttpURLConnection) yc;
 		try {
 			if (http.getResponseCode() == 502) {
-				System.out.println("http 502 in: " + link);
-				number++;
-				Thread.sleep(1000);
+				System.out.println((++number) + " time; http 502 in: " + link);
+				Thread.sleep(2000);
 				return getPageFromUrl2(link, number);
 			} else if (http.getResponseCode() == 503) {
-				System.out.println("http 503 in: " + link);
-				number++;
+				System.out.println((++number) + " time; http 503 in: " + link);
 				Thread.sleep(5000);
 				return getPageFromUrl2(link, number);
 			}

@@ -25,7 +25,7 @@ public class Reddit_crawl_links {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		Reddit_crawl_links test = new Reddit_crawl_links();
 		test.directoryCheck("data");
